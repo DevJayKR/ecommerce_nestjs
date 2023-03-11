@@ -10,4 +10,31 @@ services:
       - .env
     command: npm run start:dev
     ports:
-      - 8000:3000
+      - 8000:8000
+    depends_on:
+      - postgres_db
+    networks:
+      - ecommerce-networks
+
+  postgres_db:
+    image: postgres
+    restart: always
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=asdf1234
+      - POSTGRES_DB=ecommerce
+    ports:
+      - 5432:5432
+    networks:
+      - ecommerce-networks
+
+volumes:
+  postgres-data:
+    driver: cio
+    driver_opts:
+      profile: 'POSTGRESQL'
+
+networks:
+  ecommerce-networks:
+    driver: bridge
