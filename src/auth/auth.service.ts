@@ -13,18 +13,11 @@ export class AuthService {
     return user;
   }
 
-  // email을 찾아서 존재하는 회원인지 확인
-  // 비밀번호가 맞는지 비교 (compare 함수 이용)
-
   public async login(loginUserDto: LoginUserDto) {
     const user = await this.userService.getByEmail(loginUserDto.email);
-    const isMatched = await bcrypt.compare(
-      loginUserDto.password,
-      user.password,
-    );
+    const isMatched = await bcrypt.compare(loginUserDto.password, user.password);
 
-    if (!isMatched)
-      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+    if (!isMatched) throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
 
     return user;
   }
