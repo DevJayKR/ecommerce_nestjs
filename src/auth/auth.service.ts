@@ -15,9 +15,13 @@ export class AuthService {
 
   public async login(loginUserDto: LoginUserDto) {
     const user = await this.userService.getByEmail(loginUserDto.email);
-    const isMatched = await bcrypt.compare(loginUserDto.password, user.password);
+    const isMatched = await bcrypt.compare(
+      loginUserDto.password,
+      user.password,
+    );
 
-    if (!isMatched) throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+    if (!isMatched)
+      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
 
     return user;
   }
