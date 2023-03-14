@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
@@ -8,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AuthService } from './auth.service';
+import JwtAuthGuard from './guard/jwtAuth.guard';
 import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
 
@@ -32,11 +34,12 @@ export class AuthController {
       token,
     };
   }
-  //@Post('/login')
-  //async login(@Body() loginUserDto: LoginUserDto) {
-  //  return await this.authService.login(
-  //    loginUserDto.email,
-  //    loginUserDto.password,
-  //  );
-  //}
+
+  // profile 정보 가져오기 (로그인 한 사람)
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  authenticate(@Req() req: RequestWithUser) {
+    const { user } = req;
+    return user;
+  }
 }
