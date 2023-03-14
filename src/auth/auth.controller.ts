@@ -26,8 +26,12 @@ export class AuthController {
   @Post('login')
   async login(@Req() request: RequestWithUser) {
     const { user } = request;
+    const token = this.authService.generateAccessJwt(user.id);
 
-    return user;
+    return {
+      user,
+      token,
+    };
   }
   //@Post('/login')
   //async login(@Body() loginUserDto: LoginUserDto) {

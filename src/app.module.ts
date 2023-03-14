@@ -16,6 +16,8 @@ import { AuthModule } from './auth/auth.module';
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_DB: Joi.string().required(),
+        JWT_ACCESS_SECRET_KEY: Joi.string().required(),
+        JWT_ACCESS_EXPIRATION_TIME: Joi.number().required(),
         SERVER_PORT: Joi.number().required(),
       }),
     }),
