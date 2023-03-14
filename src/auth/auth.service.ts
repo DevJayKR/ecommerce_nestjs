@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -37,6 +42,44 @@ export class AuthService {
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
 
     return user;
+  }
+
+  public async decodeConfirmationToken(token: string) {
+    try {
+      const payload = await this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_VERIFICATION_TOKEN_SECRET'),
+      });
+
+      if (typeof payload == 'object' && 'email' in payload) {
+        return payload.email;
+      }
+
+      throw new BadRequestException();
+    } catch (e) {
+      if (e?.name === 'TokenExpiredError') {
+        throw new BadRequestException('Email confirmation token expired');
+      }
+      throw new BadRequestException('Bad confirmation token');
+    }
+  }
+
+  public async confirmEmail(email: string) {
+    const user = await this.userService.getUserByEmail(email);
+    if (user.isEmailConfirmed) {
+      throw new BadRequestException('Email is already confirmed');
+    }
+
+    await this.userService.markEmailAsConfirmed(email);
+  }
+
+  public async afterLoginResendConfirmationLink(userId: string) {
+    const user = await this.userService.getUserById(userId);
+
+    if (user.isEmailConfirmed) {
+      throw new BadRequestException('Email is already confirmed.');
+    }
+
+    await this.sendVerificationLink(user.email);
   }
 
   public sendVerificationLink(email: string) {

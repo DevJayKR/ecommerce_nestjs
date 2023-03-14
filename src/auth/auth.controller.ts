@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ConfirmEmailDto } from 'src/user/dto/confirm-email.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import JwtAuthGuard from './guard/jwtAuth.guard';
@@ -25,6 +26,19 @@ export class AuthController {
     return newUser;
   }
 
+  @Post('confirm')
+  async confirm(@Body() confirmationDto: ConfirmEmailDto) {
+    const email = await this.authService.decodeConfirmationToken(
+      confirmationDto.token,
+    );
+
+    await this.authService.confirmEmail(email);
+    return {
+      success: true,
+      message: 'Confirmed email',
+    };
+  }
+
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -35,6 +49,31 @@ export class AuthController {
     return {
       user,
       token,
+    };
+  }
+
+  // 로그인 전 이메일 확인용 메일 전송 API
+  @Post('resend/confirm')
+  async beforeLoginResendConfirmationLink(@Body('email') email: string) {
+    await this.authService.sendVerificationLink(email);
+
+    return {
+      success: true,
+      message: 'Please confirm your email',
+    };
+  }
+
+  // 로그인 이후 이메일 확인용 메일 전송 API
+  @Post('email/confirm')
+  @UseGuards(JwtAuthGuard)
+  async afterLoginResendConfirmationLink(@Req() req: RequestWithUser) {
+    const { user } = req;
+
+    await this.authService.afterLoginResendConfirmationLink(user.id);
+
+    return {
+      success: true,
+      message: 'Please confirm your email',
     };
   }
 

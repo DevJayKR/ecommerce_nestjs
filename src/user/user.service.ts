@@ -25,6 +25,15 @@ export class UserService {
     throw new HttpException('no user', HttpStatus.NOT_FOUND);
   }
 
+  async markEmailAsConfirmed(email: string) {
+    return this.userRepository.update(
+      { email },
+      {
+        isEmailConfirmed: true,
+      },
+    );
+  }
+
   async createUser(createUserDto: CreateUserDto) {
     const newUser = await this.userRepository.create(createUserDto);
     await this.userRepository.save(newUser);
