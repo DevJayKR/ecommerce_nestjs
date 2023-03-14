@@ -5,6 +5,8 @@
 .env
 *.env
 
+/cert
+
 
 # Logs
 logs
