@@ -1,16 +1,28 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { VerificationTokenPayload } from 'src/auth/verificationTokenPayload.interface';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async getUserById(id: string) {
@@ -55,5 +67,61 @@ export class UserService {
     user.password = changePasswordDto.newPassword;
     await this.userRepository.save(user);
     return user;
+  }
+
+  async changePasswordWithToken(
+    token: string,
+    changePasswordDto: ChangePasswordDto,
+  ) {
+    try {
+      const payload = await this.jwtService.verify(token, {
+        secret: this.configService.get('FIND_PASSWORD_TOKEN_SECRET'),
+      });
+
+      const user = await this.getUserByEmail(payload.email);
+
+      await this.changePassword(changePasswordDto, user);
+
+      return {
+        success: true,
+        status: 200,
+        message: 'password has changed',
+      };
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError') {
+        throw new BadRequestException('Email confirmation token expired');
+      }
+      throw new BadRequestException('Bad confirmation token');
+    }
+  }
+
+  async findPasswordSendEmail(email: string) {
+    const payload: VerificationTokenPayload = { email };
+    const user = await this.getUserByEmail(email);
+
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get('FIND_PASSWORD_TOKEN_SECRET'),
+      expiresIn: `${this.configService.get(
+        'FIND_PASSWORD_TOKEN_EXPIRATION_TIME',
+      )}s`,
+    });
+
+    const url = `${this.configService.get(
+      'EMAIL_CONFIRMATION_URL',
+    )}?token=${token}`;
+
+    if (user) {
+      await this.emailService.sendMail({
+        to: email,
+        subject: '비밀번호 찾기',
+        text: `비밀번호 찾기 ${url}`,
+      });
+
+      return {
+        success: true,
+        status: 200,
+        message: 'sended email',
+      };
+    }
   }
 }

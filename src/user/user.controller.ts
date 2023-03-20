@@ -1,12 +1,21 @@
-import { Body, Controller, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
+import { VerificationTokenPayload } from 'src/auth/verificationTokenPayload.interface';
+import { EmailService } from 'src/email/email.service';
 import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly emailService: EmailService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Put('update/password')
   @UseGuards(JwtAuthGuard)
@@ -16,5 +25,21 @@ export class UserController {
   ) {
     const user = await this.userService.getUserById(request.user.id);
     return await this.userService.changePassword(changePasswordDto, user);
+  }
+
+  @Post('find/password')
+  async findPassword(@Body('email') email: string) {
+    return await this.userService.findPasswordSendEmail(email);
+  }
+
+  @Put('update/passwordWithToken')
+  async changePasswordFromFindPassword(
+    @Body('token') token: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return await this.userService.changePasswordWithToken(
+      token,
+      changePasswordDto,
+    );
   }
 }
