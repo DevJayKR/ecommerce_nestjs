@@ -94,4 +94,9 @@ export class AuthController {
     const { user } = req;
     return user;
   }
+
+  @Post('self/check')
+  async selfCheck() {
+    return await this.authService.selfCheckAuth();
+  }
 }

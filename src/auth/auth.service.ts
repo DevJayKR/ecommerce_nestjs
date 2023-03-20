@@ -12,6 +12,8 @@ import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from './tokenPayload.interface';
 import { EmailService } from 'src/email/email.service';
 import { VerificationTokenPayload } from './verificationTokenPayload.interface';
+import Bootpay from '@bootpay/backend-js';
+import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -90,6 +92,32 @@ export class AuthService {
     }
 
     await this.sendVerificationLink(user.email);
+  }
+
+  public async selfCheckAuth(selfCheckAuthDto: SelfCheckAuthDto) {
+    Bootpay.setConfiguration({
+      application_id: this.configService.get('BOOTPAY_ID'),
+      private_key: this.configService.get('BOOTPAY_PK'),
+    });
+
+    try {
+      await Bootpay.getAccessToken();
+      const response = await Bootpay.requestAuthentication({
+        pg: selfCheckAuthDto.pg,
+        method: selfCheckAuthDto.method,
+        order_name: selfCheckAuthDto.order_name,
+        username: selfCheckAuthDto.username,
+        identity_no: selfCheckAuthDto.identity_no,
+        phone: selfCheckAuthDto.phone,
+        carrier: selfCheckAuthDto.carrier,
+        authenticate_type: 'sms',
+        authentication_id: new Date().getTime().toString(),
+      });
+
+      console.log(response);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   public sendVerificationLink(email: string) {

@@ -24,6 +24,9 @@ export class User extends AbstractEntity {
   @Column({ type: 'enum', enum: Role, default: [Role.User] })
   public roles: Role[];
 
+  @Column({ default: false })
+  public selfCheck: boolean;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {

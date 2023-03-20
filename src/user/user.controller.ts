@@ -1,21 +1,12 @@
 import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
-import { VerificationTokenPayload } from 'src/auth/verificationTokenPayload.interface';
-import { EmailService } from 'src/email/email.service';
 import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly emailService: EmailService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Put('update/password')
   @UseGuards(JwtAuthGuard)
