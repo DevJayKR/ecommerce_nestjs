@@ -30,6 +30,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "@types/nodemailer": "^6.4.7",
     "bcryptjs": "^2.4.3",
+    "helmet": "^6.0.1",
     "joi": "^17.8.3",
     "nodemailer": "^6.9.1",
     "passport": "^0.6.0",

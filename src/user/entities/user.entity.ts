@@ -2,6 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { AbstractEntity } from 'src/common/entity/AbstractEntity';
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { Role } from './roles.enum';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -19,6 +20,9 @@ export class User extends AbstractEntity {
 
   @Column({ default: false })
   public isEmailConfirmed: boolean;
+
+  @Column({ type: 'enum', enum: Role, default: [Role.User] })
+  public roles: Role[];
 
   @BeforeInsert()
   @BeforeUpdate()
