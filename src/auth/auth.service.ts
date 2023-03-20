@@ -7,7 +7,7 @@ import {
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from './tokenPayload.interface';
 import { EmailService } from 'src/email/email.service';
@@ -24,9 +24,19 @@ export class AuthService {
 
   public generateAccessJwt(userId: string) {
     const payload: TokenPayload = { userId };
-    const token = this.jwtService.sign(payload);
+    const option: JwtSignOptions = {
+      secret: this.configService.get('JWT_ACCESS_SECRET_KEY'),
+      expiresIn: `${this.configService.get('JWT_ACCESS_EXPIRATION_TIME')}s`,
+    };
+    const token = this.jwtService.sign(payload, option);
 
-    return token;
+    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_ACCESS_EXPIRATION_TIME',
+    )}`;
+  }
+
+  public getCookieForLogout() {
+    return 'Authentication=; HttpOnly; Path=/; Max-Age=0';
   }
 
   public async createUser(createUserDto: CreateUserDto) {

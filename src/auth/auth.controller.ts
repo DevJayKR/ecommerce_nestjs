@@ -45,10 +45,20 @@ export class AuthController {
   async login(@Req() request: RequestWithUser) {
     const { user } = request;
     const token = this.authService.generateAccessJwt(user.id);
+    request.res.setHeader('set-Cookie', token);
 
     return {
       user,
-      token,
+    };
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() request: RequestWithUser) {
+    request.res.setHeader('set-Cookie', this.authService.getCookieForLogout());
+    return {
+      success: true,
+      status: 200,
     };
   }
 

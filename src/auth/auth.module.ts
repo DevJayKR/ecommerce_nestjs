@@ -15,16 +15,17 @@ import { EmailModule } from 'src/email/email.module';
     PassportModule,
     EmailModule,
     ConfigModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_ACCESS_SECRET_KEY'),
-        signOptions: {
-          expiresIn: `${configService.get('JWT_ACCESS_EXPIRATION_TIME')}s`,
-        },
-      }),
-    }),
+    JwtModule.register({}),
+    //JwtModule.registerAsync({
+    //  imports: [ConfigModule],
+    //  inject: [ConfigService],
+    //  useFactory: async (configService: ConfigService) => ({
+    //    secret: configService.get('JWT_ACCESS_SECRET_KEY'),
+    //    signOptions: {
+    //      expiresIn: `${configService.get('JWT_ACCESS_EXPIRATION_TIME')}s`,
+    //    },
+    //  }),
+    //}),
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
