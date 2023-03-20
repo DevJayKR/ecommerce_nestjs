@@ -1,8 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
@@ -39,5 +41,19 @@ export class UserService {
     await this.userRepository.save(newUser);
     newUser.password = undefined;
     return newUser;
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto, user: User) {
+    const isMatched = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+
+    if (!isMatched)
+      throw new HttpException('Password is not matched', HttpStatus.CONFLICT);
+
+    user.password = changePasswordDto.newPassword;
+    await this.userRepository.save(user);
+    return user;
   }
 }
