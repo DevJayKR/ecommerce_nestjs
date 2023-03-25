@@ -10,6 +10,7 @@ import {
 import { ConfirmEmailDto } from 'src/user/dto/confirm-email.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AuthService } from './auth.service';
+import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
 import JwtAuthGuard from './guard/jwtAuth.guard';
 import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
@@ -21,7 +22,7 @@ export class AuthController {
   @Post('/signup')
   async register(@Body() createUserDto: CreateUserDto) {
     const newUser = await this.authService.createUser(createUserDto);
-    await this.authService.sendVerificationLink(createUserDto.email);
+    //await this.authService.sendVerificationLink(createUserDto.email);
 
     return newUser;
   }
@@ -96,7 +97,7 @@ export class AuthController {
   }
 
   @Post('self/check')
-  async selfCheck() {
-    return await this.authService.selfCheckAuth();
+  async selfCheck(@Body() selfCheckAuthDto: SelfCheckAuthDto) {
+    return await this.authService.selfCheckAuth(selfCheckAuthDto);
   }
 }
