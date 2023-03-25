@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -14,6 +16,8 @@ import { EmailService } from 'src/email/email.service';
 import { VerificationTokenPayload } from './verificationTokenPayload.interface';
 import Bootpay from '@bootpay/backend-js';
 import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
+import { Cache } from 'cache-manager';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   public generateAccessJwt(userId: string) {
@@ -52,6 +57,8 @@ export class AuthService {
 
     if (!isMatched)
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+
+    await this.cacheManager.set(user.id, user);
 
     return user;
   }

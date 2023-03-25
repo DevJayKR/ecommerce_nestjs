@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +16,7 @@ import { VerificationTokenPayload } from 'src/auth/verificationTokenPayload.inte
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UserService {
@@ -23,6 +26,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async getUserById(id: string) {
@@ -30,6 +34,18 @@ export class UserService {
     if (user) return user;
 
     throw new HttpException('no user', HttpStatus.BAD_REQUEST);
+  }
+
+  async saveCacheData(id: string) {
+    const cacheData = await this.cacheManager.get(id);
+
+    const user = await this.getUserById(id);
+    if (!cacheData) {
+      await this.cacheManager.set(id, user);
+      return user;
+    }
+
+    return cacheData;
   }
 
   async getUserByEmail(email: string) {

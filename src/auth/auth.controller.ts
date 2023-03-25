@@ -1,9 +1,11 @@
 import {
   Body,
+  CACHE_MANAGER,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   Req,
   UseGuards,
@@ -25,11 +27,17 @@ import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
 import JwtAuthGuard from './guard/jwtAuth.guard';
 import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
+import { Cache } from 'cache-manager';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Post('/signup')
   @ApiResponse({ status: HttpStatus.CREATED, type: User })
@@ -72,7 +80,14 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   async logout(@Req() request: RequestWithUser) {
+    const { user } = request;
     request.res.setHeader('set-Cookie', this.authService.getCookieForLogout());
+
+    console.log('user.id :>> ', user.id);
+
+    const cacheData = await this.cacheManager.get(user.id);
+    if (cacheData) await this.cacheManager.del(user.id);
+
     return {
       success: true,
       status: 200,
@@ -108,9 +123,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiBearerAuth()
-  authenticate(@Req() req: RequestWithUser) {
+  async authenticate(@Req() req: RequestWithUser) {
     const { user } = req;
-    return user;
+    const cacheData = await this.userService.saveCacheData(user.id);
+    return cacheData ?? user;
   }
 
   @Post('self/check')
