@@ -1,10 +1,12 @@
 import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
 import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
+@ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
