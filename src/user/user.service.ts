@@ -85,6 +85,7 @@ export class UserService {
     return user;
   }
 
+  // FIXME: 함수 로직이 잘못됨, 수정 필요함
   async changePasswordWithToken(
     token: string,
     changePasswordDto: ChangePasswordDto,

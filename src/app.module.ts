@@ -10,6 +10,7 @@ import { EmailModule } from './email/email.module';
 import { ProductModule } from './product/product.module';
 import { RedisModule } from './redis/redis.module';
 import { HealthModule } from './health/health.module';
+import { MovieModule } from './movie/movie.module';
 
 @Module({
   imports: [
@@ -41,6 +42,8 @@ import { HealthModule } from './health/health.module';
 
         // SERVER INFO
         SERVER_PORT: Joi.number().required(),
+
+        MOVIE_ADDRESS: Joi.string().required(),
       }),
     }),
     DatabaseModule,
@@ -50,6 +53,7 @@ import { HealthModule } from './health/health.module';
     ProductModule,
     RedisModule,
     HealthModule,
+    MovieModule,
   ],
   controllers: [AppController],
   providers: [AppService],
