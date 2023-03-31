@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Movie } from './entities/movie.entity';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class MovieService {
@@ -13,6 +14,8 @@ export class MovieService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
+
+  private readonly logger = new Logger(MovieService.name);
 
   async getMovies() {
     const { data, status } = await this.httpService
@@ -35,5 +38,10 @@ export class MovieService {
     }
 
     return await this.movieRepository.save(movies);
+  }
+
+  @Cron('45 * * * * *')
+  handleCron() {
+    this.logger.debug('Called');
   }
 }

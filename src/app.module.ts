@@ -11,6 +11,7 @@ import { ProductModule } from './product/product.module';
 import { RedisModule } from './redis/redis.module';
 import { HealthModule } from './health/health.module';
 import { MovieModule } from './movie/movie.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { MovieModule } from './movie/movie.module';
     RedisModule,
     HealthModule,
     MovieModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
