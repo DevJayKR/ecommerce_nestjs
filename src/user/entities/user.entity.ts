@@ -1,9 +1,10 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { AbstractEntity } from 'src/common/entity/AbstractEntity';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
+import { Source } from './source.enum';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -15,7 +16,7 @@ export class User extends AbstractEntity {
   @ApiProperty()
   public username?: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   public password: string;
 
   @Column({ default: 0 })
@@ -32,14 +33,21 @@ export class User extends AbstractEntity {
   @Column({ default: false })
   public selfCheck: boolean;
 
+  @Column({ type: 'enum', enum: Source })
+  public source: Source;
+
   @BeforeInsert()
-  @BeforeUpdate()
   async hashPassword() {
-    try {
-      this.password = await bcrypt.hash(this.password, 10);
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException();
+    if (this.source === Source.EMAIL) {
+      try {
+        this.password = await bcrypt.hash(this.password, 10);
+      } catch (e) {
+        console.log(e);
+        throw new InternalServerErrorException();
+      }
+    } else {
+      this.password = '';
+      this.selfCheck = true;
     }
   }
 }

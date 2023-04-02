@@ -8,13 +8,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { EmailModule } from 'src/email/email.module';
+import { FacebookAuthModule, GoogleAuthModule } from '@nestjs-hybrid-auth/all';
+import { FacebookAuthConfig } from './strategy/facebook.auth.config';
+import { GoogleAuthConfig } from './strategy/google.auth.config';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
     EmailModule,
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      expandVariables: true,
+    }),
     JwtModule.register({}),
     //JwtModule.registerAsync({
     //  imports: [ConfigModule],
@@ -26,8 +33,18 @@ import { EmailModule } from 'src/email/email.module';
     //    },
     //  }),
     //}),
+    FacebookAuthModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useClass: FacebookAuthConfig,
+    }),
+    GoogleAuthModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useClass: GoogleAuthConfig,
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, FacebookAuthConfig],
 })
 export class AuthModule {}

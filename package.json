@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@bootpay/backend-js": "^2.1.8",
+    "@nestjs-hybrid-auth/all": "^1.3.0",
     "@nestjs/axios": "^2.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",

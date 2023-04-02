@@ -17,6 +17,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { Cache } from 'cache-manager';
+import { Source } from './entities/source.enum';
+import { CreateUserWithSocialDto } from './dto/create-user-social.dto';
 
 @Injectable()
 export class UserService {
@@ -40,6 +42,8 @@ export class UserService {
     const cacheData = await this.cacheManager.get(id);
 
     const user = await this.getUserById(id);
+    user.password = undefined;
+
     if (!cacheData) {
       await this.cacheManager.set(id, user);
       return user;
@@ -66,6 +70,14 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDto) {
     const newUser = this.userRepository.create(createUserDto);
+    newUser.source = Source.EMAIL;
+    await this.userRepository.save(newUser);
+    newUser.password = undefined;
+    return newUser;
+  }
+
+  async createUserWithSocial(createUserWithSocialDto: CreateUserWithSocialDto) {
+    const newUser = this.userRepository.create(createUserWithSocialDto);
     await this.userRepository.save(newUser);
     newUser.password = undefined;
     return newUser;
@@ -85,7 +97,6 @@ export class UserService {
     return user;
   }
 
-  // FIXME: 함수 로직이 잘못됨, 수정 필요함
   async changePasswordWithToken(
     token: string,
     changePasswordDto: ChangePasswordDto,

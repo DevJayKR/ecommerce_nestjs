@@ -17,7 +17,8 @@ import { VerificationTokenPayload } from './verificationTokenPayload.interface';
 import Bootpay from '@bootpay/backend-js';
 import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
 import { Cache } from 'cache-manager';
-import { User } from 'src/user/entities/user.entity';
+import { GoogleAuthProfileDto } from './dto/google-auth-profile.dto.ts';
+import { Source } from 'src/user/entities/source.enum';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +30,7 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  public generateAccessJwt(userId: string) {
+  public generateAccessJwt(userId: string): string {
     const payload: TokenPayload = { userId };
     const option: JwtSignOptions = {
       secret: this.configService.get('JWT_ACCESS_SECRET_KEY'),
@@ -40,6 +41,17 @@ export class AuthService {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
       'JWT_ACCESS_EXPIRATION_TIME',
     )}`;
+  }
+
+  public generateAccessJwtForClient(userId: string): string {
+    const payload: TokenPayload = { userId };
+    const option: JwtSignOptions = {
+      secret: this.configService.get('JWT_ACCESS_SECRET_KEY'),
+      expiresIn: `${this.configService.get('JWT_ACCESS_EXPIRATION_TIME')}s`,
+    };
+    const token = this.jwtService.sign(payload, option);
+
+    return token;
   }
 
   public getCookieForLogout() {
@@ -56,11 +68,44 @@ export class AuthService {
     const isMatched = await bcrypt.compare(password, user.password);
 
     if (!isMatched)
-      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        '패스워드가 일치하지 않습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
 
     await this.cacheManager.set(user.id, user);
-
     return user;
+  }
+
+  // 구글 로그인시 이메일 조회 -> 있으면 토큰 -> 없으면 회원가입
+  public async loginWithGoogleAuth(
+    googleAuthProfileDto: GoogleAuthProfileDto,
+  ): Promise<string> {
+    const { email } = googleAuthProfileDto;
+
+    try {
+      const user = await this.userService.getUserByEmail(email);
+      if (user.id) return this.generateAccessJwt(user.id);
+    } catch (error) {
+      if (error.response === 'no user') {
+        const user = await this.registerWithGoogleAuth(googleAuthProfileDto);
+        return this.generateAccessJwt(user.id);
+      }
+    }
+  }
+
+  public async registerWithGoogleAuth(
+    googleAuthProfileDto: GoogleAuthProfileDto,
+  ) {
+    const { email, username } = googleAuthProfileDto;
+
+    const newUser = {
+      email,
+      username,
+      source: Source.GOOGLE,
+    };
+
+    return await this.userService.createUserWithSocial(newUser);
   }
 
   public async decodeConfirmationToken(token: string) {

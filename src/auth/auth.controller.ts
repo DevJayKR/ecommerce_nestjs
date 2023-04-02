@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Inject,
   Post,
@@ -11,10 +12,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
-  ApiHeader,
-  ApiHeaders,
+  ApiCreatedResponse,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -29,6 +30,13 @@ import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
 import { Cache } from 'cache-manager';
 import { UserService } from 'src/user/user.service';
+import {
+  FacebookAuthResult,
+  GoogleAuthResult,
+  UseFacebookAuth,
+  UseGoogleAuth,
+} from '@nestjs-hybrid-auth/all';
+import { GoogleAuthProfileDto } from './dto/google-auth-profile.dto.ts';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -40,12 +48,27 @@ export class AuthController {
   ) {}
 
   @Post('/signup')
-  @ApiResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiCreatedResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiBadRequestResponse({ status: HttpStatus.BAD_REQUEST })
   async register(@Body() createUserDto: CreateUserDto) {
-    const newUser = await this.authService.createUser(createUserDto);
-    //await this.authService.sendVerificationLink(createUserDto.email);
+    try {
+      const newUser = await this.authService.createUser(createUserDto);
+      //await this.authService.sendVerificationLink(createUserDto.email);
 
-    return newUser;
+      return {
+        success: true,
+        status: 201,
+        message: 'register success',
+        data: { user: newUser },
+      };
+    } catch (error) {
+      console.log(error);
+      if (error.code === '23505')
+        throw new HttpException(
+          'User email already exist.',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
   }
 
   @Post('confirm')
@@ -71,8 +94,7 @@ export class AuthController {
   @Post('login')
   async login(@Req() request: RequestWithUser) {
     const { user } = request;
-    const token = this.authService.generateAccessJwt(user.id);
-    request.res.setHeader('set-Cookie', token);
+    const token = this.authService.generateAccessJwtForClient(user.id);
 
     return { user, token };
   }
@@ -83,14 +105,37 @@ export class AuthController {
     const { user } = request;
     request.res.setHeader('set-Cookie', this.authService.getCookieForLogout());
 
-    console.log('user.id :>> ', user.id);
-
     const cacheData = await this.cacheManager.get(user.id);
     if (cacheData) await this.cacheManager.del(user.id);
 
     return {
       success: true,
       status: 200,
+    };
+  }
+
+  @UseGoogleAuth()
+  @Get('google')
+  loginWithGoogle() {
+    return 'Login Google';
+  }
+
+  @UseGoogleAuth()
+  @Get('google/callback')
+  async googleCallback(@Req() req) {
+    const result: GoogleAuthResult = req.hybridAuthResult;
+
+    const profile: GoogleAuthProfileDto = {
+      email: result.profile.emails[0].value,
+      username: result.profile.displayName,
+    };
+
+    const token = await this.authService.loginWithGoogleAuth(profile);
+    req.res.setHeader('set-Cookie', token);
+
+    return {
+      success: true,
+      message: 'success login',
     };
   }
 
@@ -119,6 +164,18 @@ export class AuthController {
     };
   }
 
+  @UseFacebookAuth()
+  @Get('facebook')
+  loginWithFacebook() {
+    return 'Login Facebook';
+  }
+
+  @UseFacebookAuth()
+  @Get('facebook/callback')
+  facebookCallback(@Req() req) {
+    const result: FacebookAuthResult = req.hybridAuthResult;
+  }
+
   // profile 정보 가져오기 (로그인 한 사람)
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -126,6 +183,8 @@ export class AuthController {
   async authenticate(@Req() req: RequestWithUser) {
     const { user } = req;
     const cacheData = await this.userService.saveCacheData(user.id);
+    user.password = undefined;
+
     return cacheData ?? user;
   }
 
