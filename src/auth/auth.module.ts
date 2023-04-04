@@ -23,16 +23,6 @@ import { GoogleAuthConfig } from './strategy/google.auth.config';
       expandVariables: true,
     }),
     JwtModule.register({}),
-    //JwtModule.registerAsync({
-    //  imports: [ConfigModule],
-    //  inject: [ConfigService],
-    //  useFactory: async (configService: ConfigService) => ({
-    //    secret: configService.get('JWT_ACCESS_SECRET_KEY'),
-    //    signOptions: {
-    //      expiresIn: `${configService.get('JWT_ACCESS_EXPIRATION_TIME')}s`,
-    //    },
-    //  }),
-    //}),
     FacebookAuthModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -45,6 +35,6 @@ import { GoogleAuthConfig } from './strategy/google.auth.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, FacebookAuthConfig],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}

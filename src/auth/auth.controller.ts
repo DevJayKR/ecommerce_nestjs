@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -53,7 +54,7 @@ export class AuthController {
   async register(@Body() createUserDto: CreateUserDto) {
     try {
       const newUser = await this.authService.createUser(createUserDto);
-      //await this.authService.sendVerificationLink(createUserDto.email);
+      await this.authService.sendVerificationLink(createUserDto.email);
 
       return {
         success: true,
@@ -69,6 +70,17 @@ export class AuthController {
           HttpStatus.BAD_REQUEST,
         );
     }
+  }
+
+  @Get('confirm')
+  async confirmEmail(@Query('token') token: string) {
+    const email = await this.authService.decodeConfirmationToken(token);
+
+    await this.authService.confirmEmail(email);
+    return {
+      success: true,
+      message: 'Confirmed email',
+    };
   }
 
   @Post('confirm')
@@ -95,6 +107,9 @@ export class AuthController {
   async login(@Req() request: RequestWithUser) {
     const { user } = request;
     const token = this.authService.generateAccessJwtForClient(user.id);
+    const cookie = this.authService.generateAccessJwt(user.id);
+    request.res.setHeader('set-Cookie', cookie);
+    user.password = undefined;
 
     return { user, token };
   }

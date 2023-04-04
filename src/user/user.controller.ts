@@ -16,7 +16,9 @@ export class UserController {
     @Req() request: RequestWithUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    const user = await this.userService.getUserById(request.user.id);
+    const { user } = request;
+
+    await this.userService.getUserById(user.id);
     return await this.userService.changePassword(changePasswordDto, user);
   }
 
