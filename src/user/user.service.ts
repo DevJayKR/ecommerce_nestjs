@@ -84,6 +84,10 @@ export class UserService {
   }
 
   async changePassword(changePasswordDto: ChangePasswordDto, user: User) {
+    if (user.source !== Source.LOCAL) {
+      return '소셜 회원은 패스워드를 변경할 수 없습니다.';
+    }
+
     const isMatched = await bcrypt.compare(
       changePasswordDto.currentPassword,
       user.password,
@@ -129,6 +133,11 @@ export class UserService {
     });
 
     const user = await this.getUserByEmail(email);
+
+    if (user.source !== Source.LOCAL) {
+      return '소셜 회원은 비밀번호를 변경할 수 없습니다.';
+    }
+
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
 
     await this.userRepository.update(
@@ -144,6 +153,13 @@ export class UserService {
   async findPasswordSendEmail(email: string) {
     const payload: VerificationTokenPayload = { email };
     const user = await this.getUserByEmail(email);
+
+    if (user.source !== Source.LOCAL) {
+      return {
+        message:
+          '소셜 로그인으로 가입한 회원은 비밀번호 변경을 할 수 없습니다.',
+      };
+    }
 
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('FIND_PASSWORD_TOKEN_SECRET'),

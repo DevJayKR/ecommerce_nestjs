@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Source } from './source.enum';
+import * as gravatar from 'gravatar';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -33,6 +34,9 @@ export class User extends AbstractEntity {
   @Column({ default: false })
   public selfCheck: boolean;
 
+  @Column({ nullable: true })
+  public profileImg?: string;
+
   @Column({ type: 'enum', enum: Source })
   public source: Source;
 
@@ -41,6 +45,12 @@ export class User extends AbstractEntity {
     if (this.source === Source.LOCAL) {
       try {
         this.password = await bcrypt.hash(this.password, 10);
+        this.profileImg = gravatar.url(this.email, {
+          s: '200',
+          r: 'pg',
+          d: 'mm',
+          protocol: 'https',
+        });
       } catch (e) {
         console.log(e);
         throw new InternalServerErrorException();
@@ -48,6 +58,7 @@ export class User extends AbstractEntity {
     } else {
       this.password = '';
       this.selfCheck = true;
+      this.isEmailConfirmed = true;
     }
   }
 }

@@ -31,7 +31,6 @@ import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
 import { Cache } from 'cache-manager';
 import { UserService } from 'src/user/user.service';
-import { GoogleAuthProfileDto } from './dto/google-auth-profile.dto.ts';
 import { GoogleOAuthGuard } from './guard/googleAuth.guard';
 import { FacebookAuthGuard } from './guard/facebookAuth.guard';
 import { NaverAuthGuard } from './guard/naverAuth.guard';
