@@ -31,13 +31,11 @@ import { LocalAuthGuard } from './guard/localAuth.guard';
 import { RequestWithUser } from './requestWithUser.interface';
 import { Cache } from 'cache-manager';
 import { UserService } from 'src/user/user.service';
-import {
-  FacebookAuthResult,
-  GoogleAuthResult,
-  UseFacebookAuth,
-  UseGoogleAuth,
-} from '@nestjs-hybrid-auth/all';
 import { GoogleAuthProfileDto } from './dto/google-auth-profile.dto.ts';
+import { GoogleOAuthGuard } from './guard/googleAuth.guard';
+import { FacebookAuthGuard } from './guard/facebookAuth.guard';
+import { NaverAuthGuard } from './guard/naverAuth.guard';
+import { KakaoAuthGuard } from './guard/kakaoAuth.guard';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -129,31 +127,6 @@ export class AuthController {
     };
   }
 
-  @UseGoogleAuth()
-  @Get('google')
-  loginWithGoogle() {
-    return 'Login Google';
-  }
-
-  @UseGoogleAuth()
-  @Get('google/callback')
-  async googleCallback(@Req() req) {
-    const result: GoogleAuthResult = req.hybridAuthResult;
-
-    const profile: GoogleAuthProfileDto = {
-      email: result.profile.emails[0].value,
-      username: result.profile.displayName,
-    };
-
-    const token = await this.authService.loginWithGoogleAuth(profile);
-    req.res.setHeader('set-Cookie', token);
-
-    return {
-      success: true,
-      message: 'success login',
-    };
-  }
-
   // 로그인 전 이메일 확인용 메일 전송 API
   @Post('resend/confirm')
   async beforeLoginResendConfirmationLink(@Body('email') email: string) {
@@ -179,18 +152,6 @@ export class AuthController {
     };
   }
 
-  @UseFacebookAuth()
-  @Get('facebook')
-  loginWithFacebook() {
-    return 'Login Facebook';
-  }
-
-  @UseFacebookAuth()
-  @Get('facebook/callback')
-  facebookCallback(@Req() req) {
-    const result: FacebookAuthResult = req.hybridAuthResult;
-  }
-
   // profile 정보 가져오기 (로그인 한 사람)
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -206,5 +167,54 @@ export class AuthController {
   @Post('self/check')
   async selfCheck(@Body() selfCheckAuthDto: SelfCheckAuthDto) {
     return await this.authService.selfCheckAuth(selfCheckAuthDto);
+  }
+
+  //social login google
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  googleLogin() {
+    return 'google login';
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  googleLoginCallback(@Req() req) {
+    return req.user;
+  }
+
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  facebookLogin() {
+    return 'facebook login';
+  }
+
+  @Get('facebook/callback')
+  @UseGuards(FacebookAuthGuard)
+  facebookLoginCallback(@Req() req) {
+    return req.user;
+  }
+
+  @Get('naver')
+  @UseGuards(NaverAuthGuard)
+  naverLogin() {
+    return 'naver login';
+  }
+
+  @Get('naver/callback')
+  @UseGuards(NaverAuthGuard)
+  naverLoginCallback(@Req() req) {
+    return req.user;
+  }
+
+  @Get('kakao')
+  @UseGuards(KakaoAuthGuard)
+  kakaoLogin() {
+    return 'kakao login';
+  }
+
+  @Get('kakao/callback')
+  @UseGuards(KakaoAuthGuard)
+  kakaoLoginCallback(@Req() req) {
+    return req.user;
   }
 }

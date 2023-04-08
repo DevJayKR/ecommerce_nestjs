@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { AbstractEntity } from 'src/common/entity/AbstractEntity';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
@@ -38,7 +38,7 @@ export class User extends AbstractEntity {
 
   @BeforeInsert()
   async hashPassword() {
-    if (this.source === Source.EMAIL) {
+    if (this.source === Source.LOCAL) {
       try {
         this.password = await bcrypt.hash(this.password, 10);
       } catch (e) {

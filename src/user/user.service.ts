@@ -70,7 +70,7 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDto) {
     const newUser = this.userRepository.create(createUserDto);
-    newUser.source = Source.EMAIL;
+    newUser.source = Source.LOCAL;
     await this.userRepository.save(newUser);
     newUser.password = undefined;
     return newUser;

@@ -55,6 +55,15 @@ import { ScheduleModule } from '@nestjs/schedule';
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().required(),
+
+        // NAVER
+        NAVER_CLIENT_ID: Joi.string().required(),
+        NAVER_CLIENT_SECRET: Joi.string().required(),
+        NAVER_CALLBACK_URL: Joi.string().required(),
+
+        // KAKAO
+        KAKAO_CLIENT_ID: Joi.string().required(),
+        KAKAO_CALLBACK_URL: Joi.string().required(),
       }),
     }),
     DatabaseModule,

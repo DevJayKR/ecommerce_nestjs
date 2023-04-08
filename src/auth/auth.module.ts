@@ -4,13 +4,14 @@ import { AuthController } from './auth.controller';
 import { UserModule } from 'src/user/user.module';
 import { LocalStrategy } from './strategy/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { EmailModule } from 'src/email/email.module';
-import { FacebookAuthModule, GoogleAuthModule } from '@nestjs-hybrid-auth/all';
-import { FacebookAuthConfig } from './strategy/facebook.auth.config';
-import { GoogleAuthConfig } from './strategy/google.auth.config';
+import { GoogleStrategy } from './strategy/google.strategy';
+import { FacebookStrategy } from './strategy/facebook.strategy';
+import { NaverStrategy } from './strategy/naver.strategy';
+import { KakaoStrategy } from './strategy/kakao.strategy';
 
 @Module({
   imports: [
@@ -23,18 +24,16 @@ import { GoogleAuthConfig } from './strategy/google.auth.config';
       expandVariables: true,
     }),
     JwtModule.register({}),
-    FacebookAuthModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useClass: FacebookAuthConfig,
-    }),
-    GoogleAuthModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useClass: GoogleAuthConfig,
-    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+    NaverStrategy,
+    KakaoStrategy,
+  ],
 })
 export class AuthModule {}
