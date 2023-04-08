@@ -123,6 +123,24 @@ export class UserService {
     }
   }
 
+  async decodeTokenFromPasswordEmail(token: string, newPassword: string) {
+    const { email } = this.jwtService.verify(token, {
+      secret: this.configService.get('FIND_PASSWORD_TOKEN_SECRET'),
+    });
+
+    const user = await this.getUserByEmail(email);
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+    await this.userRepository.update(
+      { email },
+      {
+        password: hashedPassword,
+      },
+    );
+
+    return 'updated password';
+  }
+
   async findPasswordSendEmail(email: string) {
     const payload: VerificationTokenPayload = { email };
     const user = await this.getUserByEmail(email);

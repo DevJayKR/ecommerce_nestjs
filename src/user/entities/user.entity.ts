@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { AbstractEntity } from 'src/common/entity/AbstractEntity';
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
