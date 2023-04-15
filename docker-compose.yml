@@ -16,6 +16,7 @@ services:
       - nestjs_api
     networks:
       - ecommerce-networks
+
   nestjs_api:
     build:
       context: .

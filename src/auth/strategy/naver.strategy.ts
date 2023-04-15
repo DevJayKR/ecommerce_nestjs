@@ -27,7 +27,6 @@ export class NaverStrategy extends PassportStrategy(Strategy, Source.NAVER) {
     profile: Profile,
     done: any,
   ) {
-    console.log(profile);
     const email = profile.emails[0].value;
     const name = 'asdf';
 
@@ -39,7 +38,6 @@ export class NaverStrategy extends PassportStrategy(Strategy, Source.NAVER) {
       const token = this.authService.generateAccessJwt(user.id);
       return { user, token };
     } catch (e) {
-      console.log(e);
       if (e.response === 'no user') {
         const newUser = await this.userService.createUserWithSocial({
           email,
