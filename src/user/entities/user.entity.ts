@@ -6,6 +6,7 @@ import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Source } from './source.enum';
 import * as gravatar from 'gravatar';
+import { Gender } from './gender.enum';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -20,14 +21,14 @@ export class User extends AbstractEntity {
   @Column({ nullable: true })
   public password: string;
 
-  @Column({ default: 0 })
+  @Column({ type: 'enum', enum: Gender })
   @ApiProperty()
-  public gender: number;
+  public gender: Gender;
 
   @Column({ default: false })
   public isEmailConfirmed: boolean;
 
-  @Column({ type: 'enum', enum: Role, default: [Role.User] })
+  @Column({ type: 'enum', enum: Role, default: [Role.User], array: true })
   @ApiProperty()
   public roles: Role[];
 

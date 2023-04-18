@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Patch,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
@@ -49,5 +57,10 @@ export class UserController {
       token,
       changePasswordDto,
     );
+  }
+
+  @Patch('update/role/admin')
+  async changeRole(@Body('email') email: string) {
+    return await this.userService.addRoleAdmin(email);
   }
 }

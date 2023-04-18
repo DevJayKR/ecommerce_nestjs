@@ -19,6 +19,7 @@ import { EmailService } from 'src/email/email.service';
 import { Cache } from 'cache-manager';
 import { Source } from './entities/source.enum';
 import { CreateUserWithSocialDto } from './dto/create-user-social.dto';
+import { Role } from './entities/roles.enum';
 
 @Injectable()
 export class UserService {
@@ -50,6 +51,17 @@ export class UserService {
     }
 
     return cacheData;
+  }
+
+  async addRoleAdmin(email: string) {
+    const user = await this.getUserByEmail(email);
+
+    user.roles = [Role.User, Role.Admin];
+    await this.userRepository.save(user);
+
+    user.password = undefined;
+
+    return user;
   }
 
   async getUserByEmail(email: string) {
