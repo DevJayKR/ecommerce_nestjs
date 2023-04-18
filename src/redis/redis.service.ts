@@ -5,15 +5,13 @@ import { Cache } from 'cache-manager';
 export class RedisService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
-  async set(key: string, value: any) {
-    const isExist = await this.cacheManager.get(key);
-
-    if (isExist) return isExist;
-
-    return await this.cacheManager.set(key, value);
+  async set(key: string, value: any, ttl?: number) {
+    return await this.cacheManager.set(key, value, {
+      ttl,
+    });
   }
 
-  async get(key: string) {
+  async get(key: string): Promise<any> {
     return await this.cacheManager.get(key);
   }
 
