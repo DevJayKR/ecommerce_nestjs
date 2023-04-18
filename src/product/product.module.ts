@@ -9,5 +9,6 @@ import { RedisModule } from 'src/redis/redis.module';
   imports: [TypeOrmModule.forFeature([Product]), RedisModule],
   controllers: [ProductController],
   providers: [ProductService],
+  exports: [ProductService],
 })
 export class ProductModule {}

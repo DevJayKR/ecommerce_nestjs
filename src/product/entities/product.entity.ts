@@ -15,6 +15,6 @@ export class Product extends AbstractEntity {
   @Column('text', { array: true })
   tags: string[];
 
-  @Column()
-  category: string;
+  @Column('text', { array: true })
+  categories: string[];
 }

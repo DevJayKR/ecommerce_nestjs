@@ -1,73 +1,110 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create.product.dto';
 import { RedisService } from 'src/redis/redis.service';
+import { UpdateProductDto } from './dto/update.product.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { generateProduct } from './function/createProduct';
 
 @Injectable()
 export class ProductService {
+  private logger = new Logger(ProductService.name);
+
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private readonly redisService: RedisService,
   ) {}
 
+  @Cron(CronExpression.EVERY_MINUTE)
+  async initProductsCache(): Promise<void> {
+    const products = await this.productRepository.find();
+    await this.redisService.set('products', products, 60);
+  }
+
+  async seedProduct(): Promise<void> {
+    const newProducts = generateProduct();
+    for (let i = 0; i < newProducts.length; i++) {
+      await this.productRepository.save(newProducts[i]);
+    }
+  }
+
   async createProduct(createProductDto: CreateProductDto) {
     const newProduct = this.productRepository.create(createProductDto);
-    await this.productRepository.save(newProduct);
+
+    try {
+      await this.productRepository.save(newProduct);
+    } catch (error) {
+      if (error.code === '23505')
+        throw new BadRequestException(
+          `${createProductDto.name}은(는) 이미 사용되고 있는 상품명입니다.`,
+        );
+    }
+
+    const products = await this.redisService.get('products');
+    products.push(newProduct);
+
+    await this.redisService.set('products', products);
+
     return newProduct;
   }
 
-  async findAllProduct() {
-    const products = await this.productRepository.find();
-    const redisProduct = await this.redisService.get('products');
-    const parsedRedisData = JSON.stringify(redisProduct);
+  async findAllProducts() {
+    const products = await this.redisService.get('products');
+    return products;
+  }
 
-    if (
-      !redisProduct ||
-      JSON.parse(parsedRedisData).length !== products.length
-    ) {
-      await this.redisService.set('products', products);
-      return products;
+  async findProductById(id: string): Promise<Product> {
+    const cachedProducts = await this.redisService.get('products');
+    if (cachedProducts) {
+      const product = cachedProducts.find(
+        (product: Product) => product.id === id,
+      );
+
+      if (product) return product;
     }
 
-    return redisProduct;
+    const product = await this.productRepository.findOneBy({ id });
+    if (product) return product;
+
+    throw new NotFoundException('존재하지 않는 상품입니다.');
   }
 
-  async findProductByName(name: string) {
-    const products = await this.redisService.get('products');
-    const stringifyProducts = JSON.stringify(products);
-    const parsedProducts = JSON.parse(stringifyProducts);
+  async updateProduct(id: string, updateProductDto: UpdateProductDto) {
+    const product = await this.findProductById(id);
 
-    const redisData = parsedProducts.find(
-      (product: Product) => product.name === name,
-    );
+    product.amount = updateProductDto.amount;
+    product.categories = updateProductDto.categories;
+    product.price = updateProductDto.price;
+    product.tags = updateProductDto.tags;
 
-    if (redisData) return redisData;
+    await this.productRepository.save(product);
 
+    const products = await this.productRepository.find();
     await this.redisService.set('products', products);
 
-    return await this.productRepository.findOneBy({ name });
+    return product;
   }
 
-  async findProductById(id: string) {
-    const products = await this.redisService.get('products');
-    const stringifyProducts = JSON.stringify(products);
-    const parsedProducts = JSON.parse(stringifyProducts);
+  async deleteProduct(id: string) {
+    const product = await this.productRepository.findOneBy({ id });
 
-    const redisData = parsedProducts.find(
-      (product: Product) => product.id === id,
-    );
+    if (product !== null) {
+      await this.productRepository.delete({ id });
 
-    console.log('redisData :>> ', redisData);
+      const products = await this.productRepository.find();
+      await this.redisService.set('products', products);
 
-    if (redisData) return redisData;
-
-    await this.redisService.set('products', products);
-    return await this.productRepository.findOneBy({ id });
+      return product;
+    } else {
+      throw new BadRequestException('존재하지 않는 상품입니다.');
+    }
   }
-
-  async updateProduct(id: string) {}
-  async deleteProduct(id: string) {}
 }

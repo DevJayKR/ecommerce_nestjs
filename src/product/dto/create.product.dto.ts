@@ -3,5 +3,5 @@ export class CreateProductDto {
   amount: number;
   price: number;
   tags: string[];
-  category: string;
+  categories: string[];
 }
