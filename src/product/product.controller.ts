@@ -16,6 +16,9 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create.product.dto';
 import { UpdateProductDto } from './dto/update.product.dto';
 import { PaginationParams } from 'src/common/types/paginationParams';
+import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
+import { PageDto } from 'src/common/dtos/page.dto';
+import { Product } from './entities/product.entity';
 
 @Controller('product')
 @ApiTags('product')
@@ -23,10 +26,11 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async getProduct(@Query() { offset, limit }: PaginationParams) {
-    //return this.productService.searchForProduct(offset, limit);
-
-    return await this.productService.findAllProducts(offset, limit);
+  async getProduct(
+    @Query() pageOptionDto: PageOptionsDto,
+  ): Promise<PageDto<Product>> {
+    //return await this.productService.findAllProducts(offset, limit);
+    return this.productService.findAllProducts(pageOptionDto);
   }
 
   @Get(':id')

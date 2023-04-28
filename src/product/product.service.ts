@@ -12,6 +12,9 @@ import { RedisService } from 'src/redis/redis.service';
 import { UpdateProductDto } from './dto/update.product.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { generateProduct } from './function/createProduct';
+import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
+import { PageDto } from 'src/common/dtos/page.dto';
+import { PageMetaDto } from 'src/common/dtos/page-meta.dto';
 
 @Injectable()
 export class ProductService {
@@ -56,19 +59,34 @@ export class ProductService {
     return newProduct;
   }
 
-  async findAllProducts(offset?: number, limit?: number) {
-    const [items, count] = await this.productRepository.findAndCount({
-      order: {
-        createdAt: 'DESC',
-      },
-      skip: offset,
-      take: limit,
-    });
+  async findAllProducts(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<Product>> {
+    //const [items, count] = await this.productRepository.findAndCount({
+    //  order: {
+    //    createdAt: 'DESC',
+    //  },
+    //  skip: pageOptionsDto.skip,
+    //  take: pageOptionsDto.take,
+    //});
+    //return {
+    //  items,
+    //  count,
+    //};
 
-    return {
-      items,
-      count,
-    };
+    const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+    queryBuilder
+      .orderBy('product.createdAt', pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take);
+
+    const itemCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
+
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(entities, pageMetaDto);
   }
 
   async findProductById(id: string): Promise<Product> {
