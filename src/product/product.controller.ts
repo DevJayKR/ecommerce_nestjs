@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -14,6 +15,7 @@ import { RoleGuard } from 'src/user/role.guard';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create.product.dto';
 import { UpdateProductDto } from './dto/update.product.dto';
+import { PaginationParams } from 'src/common/types/paginationParams';
 
 @Controller('product')
 @ApiTags('product')
@@ -21,8 +23,10 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async getProduct() {
-    return await this.productService.findAllProducts();
+  async getProduct(@Query() { offset, limit }: PaginationParams) {
+    //return this.productService.searchForProduct(offset, limit);
+
+    return await this.productService.findAllProducts(offset, limit);
   }
 
   @Get(':id')

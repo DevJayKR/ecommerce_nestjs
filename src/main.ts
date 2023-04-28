@@ -9,12 +9,14 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
   app.use(cookieParser());
   app.enableCors();
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({ skipMissingProperties: true, transform: true }),
   );
+
   const config = new DocumentBuilder()
     .setTitle('E-commerce API')
     .setDescription('E-commerce API')

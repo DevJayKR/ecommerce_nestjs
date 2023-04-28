@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { FindManyOptions, MoreThan, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create.product.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { UpdateProductDto } from './dto/update.product.dto';
@@ -44,7 +44,7 @@ export class ProductService {
     } catch (error) {
       if (error.code === '23505')
         throw new BadRequestException(
-          `${createProductDto.name}은(는) 이미 사용되고 있는 상품명입니다.`,
+          `${createProductDto.name} 상품명은 이미 사용되고 있습니다.`,
         );
     }
 
@@ -56,9 +56,19 @@ export class ProductService {
     return newProduct;
   }
 
-  async findAllProducts() {
-    const products = await this.redisService.get('products');
-    return products;
+  async findAllProducts(offset?: number, limit?: number) {
+    const [items, count] = await this.productRepository.findAndCount({
+      order: {
+        createdAt: 'DESC',
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    return {
+      items,
+      count,
+    };
   }
 
   async findProductById(id: string): Promise<Product> {
@@ -100,11 +110,20 @@ export class ProductService {
       await this.productRepository.delete({ id });
 
       const products = await this.productRepository.find();
-      await this.redisService.set('products', products);
+      await this.redisService.set('products', products, 60);
 
       return product;
     } else {
       throw new BadRequestException('존재하지 않는 상품입니다.');
     }
+  }
+
+  async searchForProduct(
+    text: string,
+    offset?: number,
+    limit?: number,
+    startId?: number,
+  ) {
+    //const { results, count }
   }
 }
