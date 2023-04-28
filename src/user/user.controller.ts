@@ -31,7 +31,7 @@ export class UserController {
   }
 
   @Post('find/password')
-  async findPassword(@Body('email') email: string) {
+  async findPassword(@Body('email') email: string): Promise<object> {
     return await this.userService.findPasswordSendEmail(email);
   }
 

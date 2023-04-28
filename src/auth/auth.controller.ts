@@ -108,7 +108,7 @@ export class AuthController {
     request.res.setHeader('set-Cookie', cookie);
     user.password = undefined;
 
-    return { user, token };
+    return { token };
   }
 
   @Post('logout')
