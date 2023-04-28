@@ -27,6 +27,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         // JWT INFO
         JWT_ACCESS_SECRET_KEY: Joi.string().required(),
         JWT_ACCESS_EXPIRATION_TIME: Joi.number().required(),
+        JWT_REFRESH_SECRET_KEY: Joi.string().required(),
+        JWT_REFRESH_EXPIRATION_TIME: Joi.number().required(),
         JWT_VERIFICATION_TOKEN_SECRET: Joi.string().required(),
         JWT_VERIFICATION_TOKEN_EXPIRATION_TIME: Joi.number().required(),
 

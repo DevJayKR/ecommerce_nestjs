@@ -77,6 +77,21 @@ export class AuthService {
     return user;
   }
 
+  async generateRefreshToken(userId: string) {
+    const payload: TokenPayload = { userId };
+
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET_KEY'),
+      expiresIn: `${this.configService.get('JWT_REFRESH_EXPIRATION_TIME')}s`,
+    });
+
+    const cookie = `Refresh=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_REFRESH_EXPIRATION_TIME',
+    )}`;
+
+    return { cookie, token };
+  }
+
   // 구글 로그인시 이메일 조회 -> 있으면 토큰 -> 없으면 회원가입
   public async loginWithGoogleAuth(
     googleAuthProfileDto: GoogleAuthProfileDto,

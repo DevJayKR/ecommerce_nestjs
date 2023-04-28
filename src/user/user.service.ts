@@ -80,6 +80,25 @@ export class UserService {
     );
   }
 
+  async getUserIfRefreshTokenMatches(refreshToken: string, userId: string) {
+    const user = await this.getUserById(userId);
+
+    const isRefreshTokenMatch = await bcrypt.compare(
+      refreshToken,
+      user.currentHashedRefreshToken,
+    );
+
+    if (isRefreshTokenMatch) {
+      return user;
+    }
+  }
+
+  async removeRefreshToken(userId: string): Promise<void> {
+    await this.userRepository.update(userId, {
+      currentHashedRefreshToken: null,
+    });
+  }
+
   async createUser(createUserDto: CreateUserDto) {
     const newUser = this.userRepository.create(createUserDto);
     newUser.source = Source.LOCAL;

@@ -35,6 +35,7 @@ import { GoogleOAuthGuard } from './guard/googleAuth.guard';
 import { FacebookAuthGuard } from './guard/facebookAuth.guard';
 import { NaverAuthGuard } from './guard/naverAuth.guard';
 import { KakaoAuthGuard } from './guard/kakaoAuth.guard';
+import RefreshAuthGuard from './guard/refreshAuth.guard';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -67,6 +68,15 @@ export class AuthController {
           HttpStatus.BAD_REQUEST,
         );
     }
+  }
+
+  @UseGuards(RefreshAuthGuard)
+  @Get('refresh')
+  refresh(@Req() req: RequestWithUser) {
+    const accessTokenCookie = this.authService.generateAccessJwt(req.user.id);
+    req.res.setHeader('Set-Cookie', accessTokenCookie);
+
+    return req.user;
   }
 
   @Get('confirm')
@@ -103,18 +113,25 @@ export class AuthController {
   @Post('login')
   async login(@Req() request: RequestWithUser) {
     const { user } = request;
-    const token = this.authService.generateAccessJwtForClient(user.id);
-    const cookie = this.authService.generateAccessJwt(user.id);
-    request.res.setHeader('set-Cookie', cookie);
-    user.password = undefined;
+    //const cookie = this.authService.generateAccessJwt(user.id);
 
-    return { token };
+    const accessTokenCookie = this.authService.generateAccessJwt(user.id);
+    const { cookie: refreshTokenCookie, token: refreshToken } =
+      await this.authService.generateRefreshToken(user.id);
+
+    request.res.setHeader('set-Cookie', [
+      accessTokenCookie,
+      refreshTokenCookie,
+    ]);
+
+    return { user, accessTokenCookie, refreshTokenCookie };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   async logout(@Req() request: RequestWithUser) {
     const { user } = request;
+    await this.userService.removeRefreshToken(user.id);
     request.res.setHeader('set-Cookie', this.authService.getCookieForLogout());
 
     const cacheData = await this.cacheManager.get(user.id);

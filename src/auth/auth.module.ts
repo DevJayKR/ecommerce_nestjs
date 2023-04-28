@@ -6,12 +6,13 @@ import { LocalStrategy } from './strategy/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategy/jwt.strategy';
+import { AtStrategy } from './strategy/access.strategy';
 import { EmailModule } from 'src/email/email.module';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { FacebookStrategy } from './strategy/facebook.strategy';
 import { NaverStrategy } from './strategy/naver.strategy';
 import { KakaoStrategy } from './strategy/kakao.strategy';
+import { RtStrategy } from './strategy/refresh.strategy';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { KakaoStrategy } from './strategy/kakao.strategy';
   providers: [
     AuthService,
     LocalStrategy,
-    JwtStrategy,
+    AtStrategy,
+    RtStrategy,
     GoogleStrategy,
     FacebookStrategy,
     NaverStrategy,

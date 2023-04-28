@@ -15,7 +15,6 @@ import { RoleGuard } from 'src/user/role.guard';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create.product.dto';
 import { UpdateProductDto } from './dto/update.product.dto';
-import { PaginationParams } from 'src/common/types/paginationParams';
 import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
 import { PageDto } from 'src/common/dtos/page.dto';
 import { Product } from './entities/product.entity';

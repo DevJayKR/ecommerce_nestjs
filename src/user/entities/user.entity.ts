@@ -7,6 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Source } from './source.enum';
 import * as gravatar from 'gravatar';
 import { Gender } from './gender.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -40,6 +41,10 @@ export class User extends AbstractEntity {
 
   @Column({ type: 'enum', enum: Source })
   public source: Source;
+
+  @Column({ nullable: true })
+  @Exclude()
+  currentHashedRefreshToken?: string;
 
   @BeforeInsert()
   async hashPassword() {
