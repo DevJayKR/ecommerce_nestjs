@@ -15,6 +15,7 @@ import { generateProduct } from './function/createProduct';
 import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
 import { PageDto } from 'src/common/dtos/page.dto';
 import { PageMetaDto } from 'src/common/dtos/page-meta.dto';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class ProductService {
@@ -24,6 +25,7 @@ export class ProductService {
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private readonly redisService: RedisService,
+    private readonly filesService: FilesService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -57,6 +59,44 @@ export class ProductService {
     await this.redisService.set('products', products);
 
     return newProduct;
+  }
+
+  async addProductImage(productId: string, buffer: Buffer, filename: string) {
+    const product = await this.findProductById(productId);
+
+    if (product.productImg) {
+      await this.productRepository.update(productId, {
+        ...product,
+        productImg: null,
+      });
+
+      await this.filesService.deletePublicFile(product.productImg.id);
+    }
+
+    const productImg = await this.filesService.uploadPublicFile(
+      buffer,
+      filename,
+    );
+
+    await this.productRepository.update(productId, {
+      ...product,
+      productImg,
+    });
+
+    return productImg;
+  }
+
+  async deleteProductImage(productId: string) {
+    const product = await this.findProductById(productId);
+    const fileId = product.productImg?.id;
+
+    if (fileId) {
+      await this.productRepository.update(productId, {
+        ...product,
+        productImg: null,
+      });
+      await this.filesService.deletePublicFile(fileId);
+    }
   }
 
   async findAllProducts(

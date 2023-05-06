@@ -7,7 +7,10 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/user/entities/roles.enum';
@@ -18,6 +21,9 @@ import { UpdateProductDto } from './dto/update.product.dto';
 import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
 import { PageDto } from 'src/common/dtos/page.dto';
 import { Product } from './entities/product.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { RequestWithUser } from 'src/auth/requestWithUser.interface';
+import { Express } from 'express';
 
 @Controller('product')
 @ApiTags('product')
@@ -35,6 +41,21 @@ export class ProductController {
   @Get(':id')
   async getProductById(@Param('id') id: string) {
     return await this.productService.findProductById(id);
+  }
+
+  @Post('/:productId/img')
+  @UseGuards(RoleGuard(Role.Admin))
+  @UseInterceptors(FileInterceptor('file'))
+  async addProductImage(
+    @Req() request: RequestWithUser,
+    @Param('productId') productId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.productService.addProductImage(
+      productId,
+      file.buffer,
+      file.originalname,
+    );
   }
 
   @Patch(':id')

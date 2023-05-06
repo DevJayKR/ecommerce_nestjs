@@ -12,6 +12,8 @@ import { RedisModule } from './redis/redis.module';
 import { HealthModule } from './health/health.module';
 import { MovieModule } from './movie/movie.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FilesService } from './files/files.service';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -66,6 +68,12 @@ import { ScheduleModule } from '@nestjs/schedule';
         // KAKAO
         KAKAO_CLIENT_ID: Joi.string().required(),
         KAKAO_CALLBACK_URL: Joi.string().required(),
+
+        // AWS
+        AWS_REGION: Joi.string().required(),
+        AWS_ACCESS_KEY: Joi.string().required(),
+        AWS_SECRET_KEY: Joi.string().required(),
+        AWS_BUCKEY_NAME: Joi.string().required(),
       }),
     }),
     DatabaseModule,
