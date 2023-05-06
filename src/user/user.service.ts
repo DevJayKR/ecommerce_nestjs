@@ -20,6 +20,7 @@ import { Cache } from 'cache-manager';
 import { Source } from './entities/source.enum';
 import { CreateUserWithSocialDto } from './dto/create-user-social.dto';
 import { Role } from './entities/roles.enum';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class UserService {
@@ -29,6 +30,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    private readonly filesService: FilesService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -105,6 +107,44 @@ export class UserService {
     await this.userRepository.save(newUser);
     newUser.password = undefined;
     return newUser;
+  }
+
+  async updateProfile(userId: string, buffer: Buffer, filename: string) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (user.profileImg) {
+      await this.userRepository.update(userId, {
+        ...user,
+        profileImg: null,
+      });
+
+      await this.filesService.deletePublicFile(user.profileImg.id);
+    }
+
+    const profileImg = await this.filesService.uploadPublicFile(
+      buffer,
+      filename,
+    );
+
+    await this.userRepository.update(userId, {
+      ...user,
+      profileImg,
+    });
+
+    return profileImg;
+  }
+
+  async deleteProfileImage(userId: string) {
+    const user = await this.getUserById(userId);
+    const fileId = user.profileImg?.id;
+
+    if (fileId) {
+      await this.userRepository.update(userId, {
+        ...user,
+        profileImg: null,
+      });
+      await this.filesService.deletePublicFile(fileId);
+    }
   }
 
   async createUserWithSocial(createUserWithSocialDto: CreateUserWithSocialDto) {

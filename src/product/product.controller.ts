@@ -12,7 +12,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Role } from 'src/user/entities/roles.enum';
 import { RoleGuard } from 'src/user/role.guard';
 import { ProductService } from './product.service';
@@ -24,6 +30,7 @@ import { Product } from './entities/product.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
 import { Express } from 'express';
+import { object } from 'joi';
 
 @Controller('product')
 @ApiTags('product')
@@ -44,6 +51,21 @@ export class ProductController {
   }
 
   @Post('/:productId/img')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: 'multipart/form-data',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
   @UseGuards(RoleGuard(Role.Admin))
   @UseInterceptors(FileInterceptor('file'))
   async addProductImage(

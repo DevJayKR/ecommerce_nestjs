@@ -1,17 +1,23 @@
 import {
   Body,
   Controller,
+  Param,
   Patch,
   Post,
   Put,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
 import { ChangePasswordDto } from './dto/change-passowrd.dto';
 import { UserService } from './user.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { RoleGuard } from './role.guard';
+import { Role } from './entities/roles.enum';
 
 @Controller('user')
 @ApiTags('user')
@@ -62,5 +68,20 @@ export class UserController {
   @Patch('update/role/admin')
   async changeRole(@Body('email') email: string) {
     return await this.userService.addRoleAdmin(email);
+  }
+
+  @Patch('update/:userId/profile')
+  @UseGuards(RoleGuard(Role.User))
+  @UseInterceptors(FileInterceptor('profileImg'))
+  async updateProfile(
+    @Req() request: RequestWithUser,
+    @Param('userId') userId: string,
+    @UploadedFile() profileImg: Express.Multer.File,
+  ) {
+    return await this.userService.updateProfile(
+      userId,
+      profileImg.buffer,
+      profileImg.originalname,
+    );
   }
 }

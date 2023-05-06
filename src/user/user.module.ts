@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { EmailModule } from 'src/email/email.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
     EmailModule,
     ConfigModule,
     JwtModule.register({}),
+    FilesModule,
   ],
   controllers: [UserController],
   providers: [UserService],

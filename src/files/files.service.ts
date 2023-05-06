@@ -21,7 +21,7 @@ export class FilesService {
       .upload({
         Bucket: this.configService.get('AWS_BUCKEY_NAME'),
         Body: `product/${dataBuffer}`,
-        Key: `${uuid()}-${filename}`,
+        Key: `products/${uuid()}-${filename}`,
       })
       .promise();
 

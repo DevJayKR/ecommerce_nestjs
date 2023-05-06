@@ -43,7 +43,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, Source.NAVER) {
           email,
           username: name,
           source: Source.NAVER,
-          profileImg: profile._json?.profile_image,
+          profileImg: null,
         });
 
         const token = this.authService.generateAccessJwt(newUser.id);
