@@ -251,4 +251,9 @@ export class AuthController {
   async sendSmsOtp(@Body('phone') phone: string) {
     return await this.authService.sendSmsOtp(phone);
   }
+
+  @Post('sms/verify-otp')
+  async verifySmsOtp(@Body('phone') phone: string, @Body('code') code: string) {
+    return await this.authService.verifySmsOtp(phone, code);
+  }
 }

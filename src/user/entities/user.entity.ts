@@ -1,6 +1,14 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { AbstractEntity } from 'src/common/entity/AbstractEntity';
-import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Role } from './roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
@@ -9,6 +17,8 @@ import { Source } from './source.enum';
 import { Gender } from './gender.enum';
 import { Exclude } from 'class-transformer';
 import { PublicFile } from 'src/files/entities/publicFile.entity';
+import { Product } from 'src/product/entities/product.entity';
+import { Review } from 'src/review/entity/review.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -46,6 +56,9 @@ export class User extends AbstractEntity {
 
   @Column({ type: 'enum', enum: Source })
   public source: Source;
+
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
 
   @Column({ nullable: true })
   @Exclude()

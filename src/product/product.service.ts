@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { FindManyOptions, MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create.product.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { UpdateProductDto } from './dto/update.product.dto';
@@ -16,6 +16,7 @@ import { PageOptionsDto } from 'src/common/dtos/page-option.dto';
 import { PageDto } from 'src/common/dtos/page.dto';
 import { PageMetaDto } from 'src/common/dtos/page-meta.dto';
 import { FilesService } from 'src/files/files.service';
+import { ReviewService } from 'src/review/review.service';
 
 @Injectable()
 export class ProductService {

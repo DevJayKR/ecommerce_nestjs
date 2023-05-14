@@ -15,6 +15,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { FilesService } from './files/files.service';
 import { FilesModule } from './files/files.module';
 import { SmsModule } from './sms/sms.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { SmsModule } from './sms/sms.module';
     MovieModule,
     ScheduleModule.forRoot(),
     SmsModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

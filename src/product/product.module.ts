@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { RedisModule } from 'src/redis/redis.module';
 import { FilesModule } from 'src/files/files.module';
+import { ReviewModule } from 'src/review/review.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product]), RedisModule, FilesModule],

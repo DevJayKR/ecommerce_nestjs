@@ -187,6 +187,10 @@ export class AuthService {
     } else false;
   }
 
+  public async verifySmsOtp(phone: string, code: string) {
+    return await this.smsService.confirmPhoneVerifiacation(phone, code);
+  }
+
   public generateOtp(length: number) {
     let otp = '';
 

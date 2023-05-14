@@ -30,7 +30,7 @@ import { Product } from './entities/product.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RequestWithUser } from 'src/auth/requestWithUser.interface';
 import { Express } from 'express';
-import { object } from 'joi';
+import JwtAuthGuard from 'src/auth/guard/jwtAuth.guard';
 
 @Controller('product')
 @ApiTags('product')
@@ -93,6 +93,12 @@ export class ProductController {
   @UseGuards(RoleGuard(Role.Admin))
   async addProduct(@Body() createProductDto: CreateProductDto) {
     return await this.productService.createProduct(createProductDto);
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async addReview(@Req() req: RequestWithUser) {
+    const { user } = req;
   }
 
   @Delete()
