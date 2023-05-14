@@ -13,11 +13,13 @@ import { FacebookStrategy } from './strategy/facebook.strategy';
 import { NaverStrategy } from './strategy/naver.strategy';
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { RtStrategy } from './strategy/refresh.strategy';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    SmsModule,
     EmailModule,
     ConfigModule.forRoot({
       isGlobal: true,

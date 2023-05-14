@@ -14,6 +14,7 @@ import { MovieModule } from './movie/movie.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FilesService } from './files/files.service';
 import { FilesModule } from './files/files.module';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -74,6 +75,12 @@ import { FilesModule } from './files/files.module';
         AWS_ACCESS_KEY: Joi.string().required(),
         AWS_SECRET_KEY: Joi.string().required(),
         AWS_BUCKEY_NAME: Joi.string().required(),
+
+        // TWILIO
+        TWILIO_ACCOUNT_SID: Joi.string().required(),
+        TWILIO_AUTH_TOKEN: Joi.string().required(),
+        TWILIO_VERIFICATION_SERVICE_SID: Joi.string().required(),
+        TWILIO_PHONE_NUMBER: Joi.string().required(),
       }),
     }),
     DatabaseModule,
@@ -85,6 +92,7 @@ import { FilesModule } from './files/files.module';
     HealthModule,
     MovieModule,
     ScheduleModule.forRoot(),
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

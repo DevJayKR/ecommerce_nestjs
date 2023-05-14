@@ -19,10 +19,12 @@ import { SelfCheckAuthDto } from './dto/selfcheck-auth.dto';
 import { Cache } from 'cache-manager';
 import { GoogleAuthProfileDto } from './dto/google-auth-profile.dto.ts';
 import { Source } from 'src/user/entities/source.enum';
+import { SmsService } from 'src/sms/sms.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly smsService: SmsService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -159,6 +161,10 @@ export class AuthService {
     }
 
     await this.sendVerificationLink(user.email);
+  }
+
+  public async sendSmsOtp(phone: string) {
+    await this.smsService.initialPhoneNumberVerification(phone);
   }
 
   public async sendEmailOtp(email: string) {

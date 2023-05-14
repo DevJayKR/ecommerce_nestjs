@@ -246,4 +246,9 @@ export class AuthController {
   ) {
     return await this.authService.verifyEmailOtp(email, code);
   }
+
+  @Post('sms/send-otp')
+  async sendSmsOtp(@Body('phone') phone: string) {
+    return await this.authService.sendSmsOtp(phone);
+  }
 }
