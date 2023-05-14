@@ -20,11 +20,11 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  config.update({
-    accessKeyId: configService.get('AWS_ACCESS_KEY'),
-    secretAccessKey: configService.get('AWS_SECRET_KEY'),
-    region: configService.get('AWS_REGION'),
-  });
+  //config.update({
+  //  accessKeyId: configService.get('AWS_ACCESS_KEY'),
+  //  secretAccessKey: configService.get('AWS_SECRET_KEY'),
+  //  region: configService.get('AWS_REGION'),
+  //});
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('E-commerce API')

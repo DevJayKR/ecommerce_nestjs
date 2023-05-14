@@ -161,6 +161,36 @@ export class AuthService {
     await this.sendVerificationLink(user.email);
   }
 
+  public async sendEmailOtp(email: string) {
+    const otp = this.generateOtp(6);
+    await this.cacheManager.set(email, otp);
+
+    await this.emailService.sendMail({
+      to: email,
+      subject: 'Email OTP 인증',
+      text: otp,
+    });
+  }
+
+  public async verifyEmailOtp(email: string, code: number): Promise<boolean> {
+    const otp = await this.cacheManager.get(email);
+
+    if (code === otp) {
+      await this.cacheManager.del(email);
+      return true;
+    } else false;
+  }
+
+  public generateOtp(length: number) {
+    let otp = '';
+
+    for (let i = 0; i < length; i++) {
+      otp += Math.floor(Math.random() * 10);
+    }
+
+    return otp;
+  }
+
   public async selfCheckAuth(selfCheckAuthDto: SelfCheckAuthDto) {
     Bootpay.setConfiguration({
       application_id: this.configService.get('BOOTPAY_ID'),

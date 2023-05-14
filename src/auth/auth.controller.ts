@@ -233,4 +233,17 @@ export class AuthController {
   kakaoLoginCallback(@Req() req) {
     return req.user;
   }
+
+  @Post('email/send-otp')
+  async sendEmailOtp(@Body('email') email: string): Promise<void> {
+    return await this.authService.sendEmailOtp(email);
+  }
+
+  @Post('email/verify-otp')
+  async verifyEmailOtp(
+    @Body('email') email: string,
+    @Body('code') code: number,
+  ) {
+    return await this.authService.verifyEmailOtp(email, code);
+  }
 }
